@@ -49,7 +49,7 @@ public class MQTTConsumer {
 
             MqttConnectOptions connOpts = new MqttConnectOptions();
             connOpts.setCleanSession(true);
-            connOpts.setUserName("guest");
+            connOpts.setUserName("rabbit");
             connOpts.setPassword(new char[]{'g', 'u', 'e', 's', 't'});
             mqttClient.connect(connOpts);
             MqttMessage message = new MqttMessage(content.getBytes());
