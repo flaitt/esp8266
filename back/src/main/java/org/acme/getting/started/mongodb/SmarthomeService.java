@@ -46,6 +46,17 @@ public class SmarthomeService {
     //     return list;
     // }
 
+    public void updateDevice(String user, String environment, String name, String status) {
+        Bson filter = and(eq("user", user), eq("environment", environment), eq("name", name));
+        
+        try {
+            getCollection("device").updateOne(filter, new Document("$set", new Document("status", status)));
+
+        } catch (Exception e) {
+            System.out.println("errou ao atualizar device");
+        }
+    }
+
     public List<Device> getDevicesByUserAndEnvironment(String user, String environment) {
         List<Device> list = new ArrayList<>();
         Bson filter = and(eq("user", user), eq("environment", environment));
