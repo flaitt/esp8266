@@ -17,7 +17,7 @@ import mqtt from 'mqtt'
 
 const app = createApp(App)
 app.config.globalProperties.axios=axios.create({
-    baseURL: 'http://192.168.0.127:37777',
+    baseURL: 'https://smarthome-319415.uw.r.appspot.com',
     timeout: 5000
   });
 app.config.globalProperties.axiosDevice=axios.create({
