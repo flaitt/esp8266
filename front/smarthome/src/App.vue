@@ -142,13 +142,16 @@ export default {
       }
     },
     getDevices() {
-      this.axios.get("device?user=flaitt1&environment=quarto").then((res) => {
-        this.dispositivos = res.data;
-        console.log(res.data);
-      }).catch((err) => {
-        this.dispositivos = [];
-        console.log("deu erro na requisição", err)
-      });
+      setTimeout(() => {
+        this.axios.get("device?user=flaitt1&environment=quarto").then((res) => {
+          this.dispositivos = res.data;
+          console.log("dispositivos obtidos");
+        }).catch((err) => {
+          this.dispositivos = [];
+          console.log("deu erro na requisição", err)
+        });
+        this.getDevices();
+      }, 3000);
     },
     addNewDevice() {
       const deviceName = document.getElementById("deviceName").value
@@ -168,6 +171,21 @@ export default {
         console.log("deu erro ao conectar", err)
       });
     },
+    // onConnect() {
+    //   console.log("connectado");
+    //   setTimeout(() => {
+
+    //     this.wsClient.subscribe('/topic/flaitt1', () => {
+    //       console.log("msg recebida");
+    //     });
+    //   }, 5000)
+    // },
+    // onError() {
+    //   console.log('erro ao conectar ws')
+    // },
+    // connectWss () {
+    //   this.wsClient.connect('guest', 'guest', this.onConnect, this.onError, '/');
+    // }
     // testRabbit() {
     //   console.log("oii")
     //   try {
@@ -196,6 +214,7 @@ export default {
   created() {
     this.getDevices();
     // this.testRabbit();
+    // this.connectWss();
   },
   mounted() {
     document.getElementById("wifiPassword").defaultValue = "1933425694"

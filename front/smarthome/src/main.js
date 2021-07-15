@@ -2,7 +2,12 @@ import { createApp } from 'vue'
 import App from './App.vue'
 import "bootstrap/dist/css/bootstrap.min.css"
 import axios from 'axios'
-import mqtt from 'mqtt'
+// import mqtt from 'mqtt'
+// import websocket from 'websocket'
+import Stomp from 'stompjs'
+// import { w3cwebsocket as W3CWebSocket } from "websocket"
+
+// import express from 'express'
 // import retryAxios from 'retry-axios'
 
 // axios.defaults.baseURL='http://192.168.0.127:37777'
@@ -15,14 +20,17 @@ import mqtt from 'mqtt'
 //     }
 // })
 
+// var c = new WebS
 const app = createApp(App)
 app.config.globalProperties.axios=axios.create({
     baseURL: 'https://fast-fjord-80488.herokuapp.com',
-    timeout: 5000
+    timeout: 10000
   });
 app.config.globalProperties.axiosDevice=axios.create({
     baseURL: 'http://192.168.4.1:8080',
     timeout: 3000
   });
-app.config.globalProperties.mqttClient=mqtt
+// const wes = new WebSocket('ws://127.0.0.1:15674/ws');
+app.config.globalProperties.wsClient = Stomp.over(new WebSocket('ws://127.0.0.1:15674/ws'));
+// app.config.globalProperties.mqttClient=mqtt
 app.mount('#app')
