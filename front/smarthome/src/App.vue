@@ -7,10 +7,12 @@
 
     <hr />
     <div>
+      <div class="spinner-border text-info" v-if="showDeviceLoading"></div>
       <div
         class="device row"
         v-for="dispositivo in dispositivos"
         v-bind:key="dispositivo"
+        v-else
       >
         <div class="col-md-4">
           <div class="head-name alert alert-primary">Nome do dispositivo</div>
@@ -52,7 +54,15 @@
       <div class="row">
       <div class="col-3">
       </div>
-      <div class="new-device col-6">
+      <button
+        type="button"
+        class="new-device col-6"
+        v-if="!showAddNewDevice"
+        v-on:click="openAddNewDevice()"
+      >
+      Adicionar novo dispositivo
+      </button>
+      <div class="new-device col-6" v-else>
             <form>
               <div class="form-group">
                 <label for="deviceName">Nome do dispositivo</label>
@@ -93,6 +103,13 @@
               >
               Adicionar dispositivo
               </button>
+              <button
+                type="button"
+                class="close btn btn-secondary"
+                v-on:click="closeAddNewDevice"
+              >
+              Fechar
+              </button>
             </form>
       </div>
       </div>
@@ -118,6 +135,8 @@ export default {
         // },
         // { name: "Abajur", status: "desligado", proximoHorario: "" },
       ],
+      showAddNewDevice: false,
+      showDeviceLoading: true
     };
   },
   methods: {
@@ -145,6 +164,7 @@ export default {
       setTimeout(() => {
         this.axios.get("device?user=flaitt1&environment=quarto").then((res) => {
           this.dispositivos = res.data;
+          this.showDeviceLoading = false;
           console.log("dispositivos obtidos");
         }).catch((err) => {
           this.dispositivos = [];
@@ -171,6 +191,12 @@ export default {
         console.log("deu erro ao conectar", err)
       });
     },
+    openAddNewDevice(){
+      this.showAddNewDevice = true;
+    },
+    closeAddNewDevice(){
+      this.showAddNewDevice = false;
+    }
     // onConnect() {
     //   console.log("connectado");
     //   setTimeout(() => {
@@ -257,5 +283,15 @@ export default {
 }
 .button-toggle {
   margin-top: 33px;
+}
+.spinner-border.text-info {
+  margin: 28px;
+  padding: 17px;
+}
+.close.btn.btn-secondary {
+  margin-left: 193px;
+}
+.form-check-label {
+  margin-right: 150px;
 }
 </style>
