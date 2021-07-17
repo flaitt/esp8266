@@ -7,8 +7,10 @@ import java.util.Set;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
@@ -19,6 +21,7 @@ import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
+import org.jboss.resteasy.annotations.Body;
 import org.eclipse.paho.client.mqttv3.MqttException;
 
 import org.acme.getting.started.esp8266.Esp8266Controller;
@@ -31,29 +34,31 @@ import org.eclipse.microprofile.rest.client.inject.RestClient;
 
 @Path("/")
 public class GreetingResource {
-    @Inject SmarthomeService service;
+    @Inject
+    SmarthomeService service;
     @Inject
     @RestClient
     Esp8266Controller esp8266Controller;
 
     private final static String QUEUE_NAME = "Sender";
-    String topic        = "Sender"; //routing-key
-    // String content      = "L";
-    int qos             = 1;
-    String broker       = "tcp://snake.rmq2.cloudamqp.com:1883";
-    String clientId     = "amq.topic"; //para dar o nome para fila
+    String topic = "Sender"; // routing-key
+    // String content = "L";
+    int qos = 1;
+    String broker = "tcp://snake.rmq2.cloudamqp.com:1883";
+    String clientId = "amq.topic"; // para dar o nome para fila
     MemoryPersistence persistence = new MemoryPersistence();
 
     @POST
     @Path("toggleStatus")
-    @Produces(MediaType.TEXT_PLAIN)
-    public String hello(@QueryParam("action") String action, @QueryParam("routingKey") String routingKey) {
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response hello(@QueryParam("action") String action, @QueryParam("routingKey") String routingKey) {
         try {
             MqttClient mqttClient = new MqttClient(broker, clientId, persistence);
             MqttConnectOptions connOpts = new MqttConnectOptions();
             connOpts.setCleanSession(true);
             connOpts.setUserName("zylppjqz:zylppjqz");
-            connOpts.setPassword(new char[]{'b','x','e','7','K','t','s','z','i','3','5','K','O','9','-','4','R','H','h','P','2','p','V','h','y','p','i','P','W','V','k','2'});
+            connOpts.setPassword(new char[] { 'b', 'x', 'e', '7', 'K', 't', 's', 'z', 'i', '3', '5', 'K', 'O', '9', '-',
+                    '4', 'R', 'H', 'h', 'P', '2', 'p', 'V', 'h', 'y', 'p', 'i', 'P', 'W', 'V', 'k', '2' });
             mqttClient.connect(connOpts);
             MqttMessage message = new MqttMessage(action.getBytes());
             message.setQos(qos);
@@ -62,33 +67,61 @@ public class GreetingResource {
 
             System.out.println(" [x] Sent '" + message + "'");
 
-        } catch(MqttException me) {
-            System.out.println("reason "+me.getReasonCode());
-            System.out.println("msg "+me.getMessage());
-            System.out.println("loc "+me.getLocalizedMessage());
-            System.out.println("cause "+me.getCause());
-            System.out.println("excep "+me);
+        } catch (MqttException me) {
+            System.out.println("reason " + me.getReasonCode());
+            System.out.println("msg " + me.getMessage());
+            System.out.println("loc " + me.getLocalizedMessage());
+            System.out.println("cause " + me.getCause());
+            System.out.println("excep " + me);
             me.printStackTrace();
         }
-        return "ok toggle";
+        return Response.ok().header("Access-Control-Allow-Origin", "*").entity("ok").build();
+    }
+
+    @Path("authenticate")
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response authenticate(@QueryParam("userName") String userName, @QueryParam("password") String password) {
+        System.out.println("tentou acessar authenticate");
+        try {
+            if(service.authenticate(userName, password)) {
+                return Response.ok().header("Access-Control-Allow-Origin", "*").entity("ok").build();
+            } else {
+                return Response.status(Status.NOT_FOUND).header("Access-Control-Allow-Origin", "*").build();    
+            }
+        } catch (Exception e) {
+            return Response.status(Status.NOT_FOUND).header("Access-Control-Allow-Origin", "*").build();
+        }
+    }
+
+    @Path("createNewUser")
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response createAccount(@QueryParam("userName") String userName, @QueryParam("password") String password) {
+        System.out.println("tentou criar usuário");
+        try {
+            if(service.createNewUser(userName, password)) {
+                return Response.ok().header("Access-Control-Allow-Origin", "*").entity("ok").build();
+            } else {
+                return Response.status(Status.NOT_FOUND).header("Access-Control-Allow-Origin", "*").build();    
+            }
+        } catch (Exception e) {
+            return Response.status(Status.NOT_FOUND).header("Access-Control-Allow-Origin", "*").build();
+        }
     }
 
     @Path("adddevice")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response addDeviceToDatabase(@QueryParam("name") String name,
-                                @QueryParam("status") String status,
-                                @QueryParam("environment") String environment,
-                                @QueryParam("user") String user) {
+    public Response addDeviceToDatabase(@QueryParam("name") String name, @QueryParam("status") String status,
+            @QueryParam("environment") String environment, @QueryParam("user") String user) {
         Device device = new Device(name, status, environment, user);
         try {
             service.addDevice(device);
-            return Response
-                        .ok()
-                        .header("Access-Control-Allow-Origin", "*")
-                        .entity("ok")
-                        .build();
+            return Response.ok().header("Access-Control-Allow-Origin", "*").entity("ok").build();
         } catch (Exception e) {
             System.out.println("Erro ao aidicionar objeto no mongo");
             return Response.status(Status.INTERNAL_SERVER_ERROR).build();
@@ -99,9 +132,8 @@ public class GreetingResource {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.TEXT_PLAIN)
-    public String addEnvironemntToDatabase(@QueryParam("name") String name,
-                                @QueryParam("house") String house,
-                                @QueryParam("user") String user) {
+    public String addEnvironemntToDatabase(@QueryParam("name") String name, @QueryParam("house") String house,
+            @QueryParam("user") String user) {
         Environment environment = new Environment(name, house, user);
         try {
             service.addEnvironment(environment);
@@ -115,8 +147,7 @@ public class GreetingResource {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.TEXT_PLAIN)
-    public String addHouseToDatabase(@QueryParam("name") String name,
-                                @QueryParam("user") String user) {
+    public String addHouseToDatabase(@QueryParam("name") String name, @QueryParam("user") String user) {
         House house = new House(name, user);
         try {
             service.addHouse(house);
@@ -130,16 +161,11 @@ public class GreetingResource {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response connectEsp8266(@QueryParam("rede") String rede,
-                                   @QueryParam("senha") String senha) {
+    public Response connectEsp8266(@QueryParam("rede") String rede, @QueryParam("senha") String senha) {
         try {
             System.out.println("Acessou o resource connect esp");
             Esp8266Response esp8266Response = esp8266Controller.connectEsp(rede, senha);
-            return Response
-                        .ok()
-                        .header("Access-Control-Allow-Origin", "*")
-                        .entity(esp8266Response)
-                        .build();
+            return Response.ok().header("Access-Control-Allow-Origin", "*").entity(esp8266Response).build();
         } catch (Exception e) {
             System.out.println("falha em connect esp");
             return Response.status(Status.INTERNAL_SERVER_ERROR).build();
@@ -151,19 +177,19 @@ public class GreetingResource {
     // @Consumes(MediaType.APPLICATION_JSON)
     // @Produces(MediaType.TEXT_PLAIN)
     // public String publishESP8266(@QueryParam("message") String message) {
-    //     ConnectionFactory factory = new ConnectionFactory();
-    //     factory.setHost("localhost");
-    //     factory.setUsername("guest");
-    //     factory.setPassword("guest");
+    // ConnectionFactory factory = new ConnectionFactory();
+    // factory.setHost("localhost");
+    // factory.setUsername("guest");
+    // factory.setPassword("guest");
 
-    //     try {
-    //         Connection connection = factory.newConnection();
-    //         Channel channel = connection.createChannel();
-    //         channel.basicPublish("test-exchange", "inTopic", null, message.getBytes());
-    //         return "[SUCESSO] Mensagem enviada para ESP8266";
-    //     } catch (Exception e) {
-    //         return "[ERRO] Mensagem não enviada para ESP8266";
-    //     }
+    // try {
+    // Connection connection = factory.newConnection();
+    // Channel channel = connection.createChannel();
+    // channel.basicPublish("test-exchange", "inTopic", null, message.getBytes());
+    // return "[SUCESSO] Mensagem enviada para ESP8266";
+    // } catch (Exception e) {
+    // return "[ERRO] Mensagem não enviada para ESP8266";
+    // }
     // }
 
     @Path("device")
@@ -206,12 +232,11 @@ public class GreetingResource {
 
         try {
             houses = service.getHouseByUser(user);
-            
+
             return Response.ok().entity(houses).build();
         } catch (Exception e) {
             return Response.status(Status.INTERNAL_SERVER_ERROR).build();
         }
     }
-
 
 }

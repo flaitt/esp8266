@@ -1,6 +1,7 @@
 #include <ESP8266WiFi.h>       // Importa a Biblioteca ESP8266WiFi
 #include <PubSubClient.h>      // Importa a Biblioteca PubSubClient
 #include <ESP8266WebServer.h>  // Importa a Biblioteca ESP8266WebServer
+#include "ESP8266TimerInterrupt.h"
  
 //defines:
 //defines de id mqtt e tópicos para publicação e subscribe
@@ -30,7 +31,11 @@ String ID_MQTT  ="";
 int alreadySet = 0;
 
 ESP8266WebServer httpRestServer(HTTP_REST_PORT);
- 
+
+#define TIMER_INTERVAL_MS        1000 
+
+// Init ESP8266 timer 0
+ESP8266Timer ITimer;
  
 // WIFI
 const char* SSID = ""; // "VIVOFIBRA-019F"; // SSID / nome da rede WI-FI que deseja se conectar
@@ -48,7 +53,13 @@ WiFiClient espClient; // Cria o objeto espClient
 PubSubClient MQTT(espClient); // Instancia o Cliente MQTT passando o objeto espClient
 char EstadoSaida = '0';  //variável que armazena o estado atual da saída
 int ap_mode = 1;
+
+String deviceName = "";
+String environment = "";
+String user = "";
   
+unsigned char time_lock = 0;
+
 //Prototypes
 void initSerial();
 void initWiFi();
@@ -58,6 +69,7 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length);
 void VerificaMQTT(void);
 void InitOutput(void);
 void ICACHE_RAM_ATTR ISR(void);
+void ICACHE_RAM_ATTR TimerHandler(void);
  
 /* 
  *  Implementações das funções
@@ -86,6 +98,12 @@ void setup()
     httpRestServer.begin();
     httpRestServer.sendHeader(F("Access-Control-Allow-Origin"), F("*"));
     attachInterrupt(digitalPinToInterrupt(IO14), ISR, CHANGE);
+
+    if (ITimer.attachInterruptInterval(TIMER_INTERVAL_MS * 1000, TimerHandler))
+        Serial.println("Starting  ITimer OK, millis() = " + String(millis()));
+    else
+        Serial.println("Can't set ITimer correctly. Select another freq. or interval");
+
 }
 
  
@@ -93,11 +111,22 @@ void setup()
 //Parâmetros: nenhum
 //Retorno: nenhum
 void ICACHE_RAM_ATTR ISR(void){
-  digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
-  digitalWrite(IO16, !digitalRead(IO16));
-  EstadoSaida = (EstadoSaida == '1')?'0':'1';
-  state_changed = true;
-  Serial.println((EstadoSaida == '1')?"L":"D");
+    if(time_lock > 3)
+        state_changed = true;
+}
+
+
+//Função: Rotina de interrupção de timer
+//Parâmetros: nenhum
+//Retorno: nenhum
+static bool toggle = false;
+
+void ICACHE_RAM_ATTR TimerHandler(void){
+  //timer interrupt toggles pin LED_BUILTIN
+  //digitalWrite(LED_BUILTIN, toggle);
+  //toggle = !toggle;
+  if(time_lock < 253)
+    time_lock++;
 }
 
 
@@ -117,10 +146,10 @@ void restServerRouting() {
         PASSWORD = httpRestServer.arg("senha").c_str();
         TOPICO_SUBSCRIBE = httpRestServer.arg("routingKey").c_str();
         ID_MQTT = TOPICO_SUBSCRIBE;
-        String deviceName = httpRestServer.arg("deviceName").c_str();
+        deviceName = httpRestServer.arg("deviceName").c_str();
         String status = httpRestServer.arg("status").c_str();
-        String environment = httpRestServer.arg("environment").c_str();
-        String user = httpRestServer.arg("user").c_str();
+        environment = httpRestServer.arg("environment").c_str();
+        user = httpRestServer.arg("user").c_str();
         //ip_address_device = httpRestServer.arg("endIp").c_str();
         //print(TOPICO_SUBSCRIBE);
         httpRestServer.send(200, F("application/json"),
@@ -210,9 +239,9 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length)
         digitalWrite(IO16, HIGH);
         EstadoSaida = '1';
         Serial.println("L");
-        String deviceName = getValue(ID_MQTT, '_', 0);
-        String environment = getValue(ID_MQTT, '_', 1);
-        String user = getValue(ID_MQTT, '_', 3);
+        deviceName = getValue(ID_MQTT, '_', 0);
+        environment = getValue(ID_MQTT, '_', 1);
+        user = getValue(ID_MQTT, '_', 3);
         Serial.println("deviceName" + deviceName);
         Serial.println("env" + environment);
         Serial.println("user" + user);
@@ -222,9 +251,9 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length)
     //verifica se deve colocar nivel alto de tensão na saída D0:
     if (msg.equals("D"))
     {
-        String deviceName = getValue(ID_MQTT, '_', 0);
-        String environment = getValue(ID_MQTT, '_', 1);
-        String user = getValue(ID_MQTT, '_', 3);
+        deviceName = getValue(ID_MQTT, '_', 0);
+        environment = getValue(ID_MQTT, '_', 1);
+        user = getValue(ID_MQTT, '_', 3);
         EnviaParaBancoDeDados(deviceName, "off", environment, user, "updateStatus");
         digitalWrite(D1,HIGH);
         digitalWrite(LED_BUILTIN, HIGH);
@@ -304,20 +333,26 @@ void VerificaMQTT(void)
 //Função: envia ao Broker o estado atual do output 
 //Parâmetros: nenhum
 //Retorno: nenhum
-void EnviaEstadoOutputMQTT(void)
-{
+void EnviaEstadoOutputMQTT(void){
+
+    digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
+    digitalWrite(IO16, !digitalRead(IO16));
+    EstadoSaida = (EstadoSaida == '1')?'0':'1';
+    Serial.println((EstadoSaida == '1')?"L":"D");
     if (EstadoSaida == '0')
-      MQTT.publish(TOPICO_PUBLISH, ("{\"nome\": \""+ID_MQTT+"\",\"comando\": \"L\"}").c_str());
- 
+        //MQTT.publish(TOPICO_PUBLISH, ("{\"nome\": \""+ID_MQTT+"\",\"comando\": \"L\"}").c_str());
+        EnviaParaBancoDeDados(deviceName, "off", environment, user, "updateStatus");
     if (EstadoSaida == '1')
-      MQTT.publish(TOPICO_PUBLISH, ("{\"nome\": \""+ID_MQTT+"\",\"comando\": \"D\"}").c_str());
+        //MQTT.publish(TOPICO_PUBLISH, ("{\"nome\": \""+ID_MQTT+"\",\"comando\": \"D\"}").c_str());
+        EnviaParaBancoDeDados(deviceName, "on", environment, user, "updateStatus");
 
     state_changed = false;
+    time_lock = 0;
     delay(300);
 }
 
-void EnviaParaBancoDeDados(String name, String status, String environment, String user, String action) {
-    MQTT.publish(TOPICO_PUBLISH, ("{\"name\": \""+name+"\",\"status\": \""+status+"\",\"environment\": \""+environment+"\",\"user\": \""+user+"\",\"action\": \""+action+"\"}").c_str());
+void EnviaParaBancoDeDados(String name, String status, String environmentDevice, String userDevice, String action) {
+    MQTT.publish(TOPICO_PUBLISH, ("{\"name\": \""+name+"\",\"status\": \""+status+"\",\"environment\": \""+environmentDevice+"\",\"user\": \""+userDevice+"\",\"action\": \""+action+"\"}").c_str());
 }
 
 

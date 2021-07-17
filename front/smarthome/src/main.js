@@ -4,7 +4,8 @@ import "bootstrap/dist/css/bootstrap.min.css"
 import axios from 'axios'
 // import mqtt from 'mqtt'
 // import websocket from 'websocket'
-import Stomp from 'stompjs'
+// import Stomp from 'stompjs'
+import Router from './router'
 // import { w3cwebsocket as W3CWebSocket } from "websocket"
 
 // import express from 'express'
@@ -22,8 +23,11 @@ import Stomp from 'stompjs'
 
 // var c = new WebS
 const app = createApp(App)
+app.use(Router)
+app.config.globalProperties.userName='';
 app.config.globalProperties.axios=axios.create({
-    baseURL: 'https://fast-fjord-80488.herokuapp.com',
+    baseURL: 'https://smarthomedosfluxo.herokuapp.com',
+    // baseURL: 'http://192.168.0.127:37777',
     timeout: 10000
   });
 app.config.globalProperties.axiosDevice=axios.create({
@@ -31,6 +35,6 @@ app.config.globalProperties.axiosDevice=axios.create({
     timeout: 3000
   });
 // const wes = new WebSocket('ws://127.0.0.1:15674/ws');
-app.config.globalProperties.wsClient = Stomp.over(new WebSocket('ws://127.0.0.1:15674/ws'));
+// app.config.globalProperties.wsClient = Stomp.over(new WebSocket('ws://127.0.0.1:15674/ws'));
 // app.config.globalProperties.mqttClient=mqtt
 app.mount('#app')

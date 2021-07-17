@@ -57,6 +57,47 @@ public class SmarthomeService {
         }
     }
 
+    public Boolean authenticate(String user, String password) {
+        List<User> list = new ArrayList<>();
+
+        Bson filter = and(eq("user", user), eq("password", password));
+
+        MongoCursor<Document> cursor = getCollection("users").find(filter).iterator();
+
+        try {
+            while(cursor.hasNext()){
+                Document document = cursor.next();
+                User user2 = new User(document.getString("user"), document.getString("password"));
+                list.add(user2);
+            }
+        } catch (Exception e) {
+            System.out.println("ERRO AO ACESSAR O MONGO");
+        }
+
+        if(list.size() == 1) {
+            return true;
+        }
+        return false;
+    }
+
+    public Boolean createNewUser(String user, String password) {
+        if(getCollection("users").find(eq("user", user)).iterator().hasNext()) {
+            return false;  
+        } else {
+            try {
+                Document document = new Document()
+                                    .append("user", user)
+                                    .append("password", password);
+                getCollection("users").insertOne(document);
+                return true;
+            } catch (Exception e) {
+                System.out.println("Erro ao criar usuário");
+                return false;
+            }
+        }
+
+    }
+
     public List<Device> getDevicesByUserAndEnvironment(String user, String environment) {
         List<Device> list = new ArrayList<>();
         Bson filter = and(eq("user", user), eq("environment", environment));
