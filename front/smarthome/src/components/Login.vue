@@ -62,17 +62,27 @@ export default {
 <style scoped>
 .login {
   margin-top: 40px;
+  border-style: solid;
+  margin: 42px;
+  padding: 33px;
+  border-radius: 35px;
+  /* border-color: #4DD0E1; */
 }
 input {
   margin: 10px 0;
-  width: 20%;
   padding: 15px;
+  border-radius: 10px;
+  border-style: solid;
+  border-color: #0cbcd3;
+}
+input:focus {
+  outline: none;
 }
 button {
   font-family: "Roboto", sans-serif;
   text-transform: uppercase;
   outline: 0;
-  background: #4caf50;
+  background: #0cbcd3;
   border: 0;
   padding: 15px;
   color: #ffffff;
@@ -80,6 +90,7 @@ button {
   -webkit-transition: all 0.3 ease;
   transition: all 0.3 ease;
   cursor: pointer;
+  border-radius: 5px;
 }
 p {
   margin-top: 40px;
