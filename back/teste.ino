@@ -26,8 +26,6 @@
 const char* ssid = "dd-wrt";
 const char* password = "1933425694";
 const char* mqtt_server = "35.230.114.47";
-const char* mqtt_user = "rabbit";
-const char* mqtt_password = "l0iQd9N3ytX8";
 
 WiFiClient espClient;
 PubSubClient client(espClient);

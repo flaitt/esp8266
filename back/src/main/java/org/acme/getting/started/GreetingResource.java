@@ -2,15 +2,12 @@ package org.acme.getting.started;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
-import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
@@ -21,7 +18,6 @@ import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
-import org.jboss.resteasy.annotations.Body;
 import org.eclipse.paho.client.mqttv3.MqttException;
 
 import org.acme.getting.started.esp8266.Esp8266Controller;
@@ -56,9 +52,8 @@ public class GreetingResource {
             MqttClient mqttClient = new MqttClient(broker, clientId, persistence);
             MqttConnectOptions connOpts = new MqttConnectOptions();
             connOpts.setCleanSession(true);
-            connOpts.setUserName("zylppjqz:zylppjqz");
-            connOpts.setPassword(new char[] { 'b', 'x', 'e', '7', 'K', 't', 's', 'z', 'i', '3', '5', 'K', 'O', '9', '-',
-                    '4', 'R', 'H', 'h', 'P', '2', 'p', 'V', 'h', 'y', 'p', 'i', 'P', 'W', 'V', 'k', '2' });
+            connOpts.setUserName("z");
+            connOpts.setPassword(new char[] { 'b' });
             mqttClient.connect(connOpts);
             MqttMessage message = new MqttMessage(action.getBytes());
             message.setQos(qos);
