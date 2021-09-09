@@ -1,4 +1,6 @@
 <template>
+  <img src="./../static/home-icon.png">
+  <h2>Smartcommand</h2>
   <div class="login">
     <h1>Login</h1>
     <input
@@ -13,7 +15,8 @@
       v-model="senha"
     >
     <br>
-    <div class="btn-login">
+    <div class="spinner-border text-info" v-if="isLoading"></div>
+    <div class="btn-login" v-else>
       <button @click="login">Login</button>
     </div>
     <p>
@@ -32,17 +35,21 @@ export default {
   data () {
     return {
       userNameUsed: '',
-      senha: ''
+      senha: '',
+      isLoading: false
     }
   },
    methods: {
       login: function() {
+        this.isLoading = true;
         this.axios.post(`authenticate?userName=${this.userNameUsed}&password=${this.senha}`)
         .then(() => {
+            this.isLoading = false;
             alert(`Bem Vindo, ${this.userNameUsed}`)
             var userName = this.userNameUsed;
             this.$router.replace({name: 'devices', params: {userName}});
         }).catch((err) => {
+            this.isLoading = false;
             alert('Não foi possível realizar o login. ' + err.message)
         });
         // firebase.auth().signInWithEmailAndPassword(this.userNameUsed, this.senha).then(

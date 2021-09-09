@@ -1,7 +1,7 @@
 <template>
   <div id="devices">
     <img src="./../static/home-icon.png">
-    <div>Smarthome</div>
+    <div>Smartcommand</div>
     <div id="top" class="head row">Casas > Ambientes > Dispositivos</div>
     <!-- Cabeçalho -->
     <hr />
