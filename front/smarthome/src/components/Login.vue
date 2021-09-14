@@ -1,31 +1,33 @@
 <template>
-  <img src="./../static/home-icon.png">
-  <h2>Smartcommand</h2>
-  <div class="login">
-    <h1>Login</h1>
-    <input
-      type="text"
-      placeholder="Usuário"
-      v-model="userNameUsed"
-    >
-    <br>
-    <input
-      type="password"
-      placeholder="Senha"
-      v-model="senha"
-    >
-    <br>
-    <div class="spinner-border text-info" v-if="isLoading"></div>
-    <div class="btn-login" v-else>
-      <button @click="login">Login</button>
+  <div>
+    <img src="./../static/home-icon.png">
+    <h2>Smartcommand</h2>
+    <div class="login">
+      <h1>Login</h1>
+      <input
+        type="text"
+        placeholder="Usuário"
+        v-model="userNameUsed"
+      >
+      <br>
+      <input
+        type="password"
+        placeholder="Senha"
+        v-model="senha"
+      >
+      <br>
+      <div class="spinner-border text-info" v-if="isLoading"></div>
+      <div class="btn-login" v-else>
+        <button @click="login">Login</button>
+      </div>
+      <p>
+        Você não tem conta?
+        <span>
+          <!-- <router-link to="/">crie uma conta</router-link> -->
+          <router-link to="/singUp">crie uma conta</router-link>
+        </span>
+      </p>
     </div>
-    <p>
-      Você não tem conta?
-      <span>
-        <!-- <router-link to="/">crie uma conta</router-link> -->
-        <router-link to="/singUp">crie uma conta</router-link>
-      </span>
-    </p>
   </div>
 </template>
 
@@ -45,22 +47,12 @@ export default {
         this.axios.post(`authenticate?userName=${this.userNameUsed}&password=${this.senha}`)
         .then(() => {
             this.isLoading = false;
-            alert(`Bem Vindo, ${this.userNameUsed}`)
             var userName = this.userNameUsed;
             this.$router.replace({name: 'devices', params: {userName}});
         }).catch((err) => {
             this.isLoading = false;
             alert('Não foi possível realizar o login. ' + err.message)
         });
-        // firebase.auth().signInWithEmailAndPassword(this.userNameUsed, this.senha).then(
-        //   (user) => {
-        //     this.$router.replace('home')
-        //     alert(`Bem Vindo, ${{userNameUsed}}`)
-        //   },
-        //   (err) => {
-        //     alert('Não foi possível realizar o login. ' + err.message)
-        //   }
-        // );
       }
     }
   }

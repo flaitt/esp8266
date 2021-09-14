@@ -1,16 +1,16 @@
 <template>
-  <div id="devices">
+  <div id="houses">
     <img src="./../static/home-icon.png">
     <div>Smartcommand</div>
     <div id="top" class="head row">Casas > Ambientes > Dispositivos</div>
     <!-- Cabeçalho -->
     <hr />
     <div>
-      <div class="spinner-border text-info" v-if="showDeviceLoading"></div>
+      <div class="spinner-border text-info" v-if="showHouseLoading"></div>
       <div
         class="device row"
-        v-for="dispositivo in dispositivos"
-        v-bind:key="dispositivo"
+        v-for="house in houses"
+        v-bind:key="house"
         v-else
       >
         <div class="col-md-4">
@@ -18,38 +18,6 @@
           <div class="alert alert-primary">
             {{ dispositivo.name }}
           </div>
-        </div>
-        <div class="col-md-4" v-if="dispositivo.status === 'on'">
-          <div class="head-name alert alert-success">Status do Dispositivo</div>
-          <div class="alert alert-success">
-            {{ dispositivo.status }}
-          </div>
-        </div>
-        <div class="col-md-4" v-else>
-          <div class="head-name alert alert-danger">Status do Dispositivo</div>
-          <div class="alert alert-danger">
-            {{ dispositivo.status }}
-          </div>
-        </div>
-        <div class="col-md-4" v-if="dispositivo.status === 'on'">
-          <button
-            type="button"
-            id="button1"
-            class="button-toggle btn btn-secondary"
-            v-on:click="toggleLigth(dispositivo)"
-          >
-            Desligar
-          </button>
-        </div>
-        <div class="col-md-4" v-else>
-          <button
-            type="button"
-            id="button2"
-            class="button-toggle btn btn-secondary"
-            v-on:click="toggleLigth(dispositivo)"
-          >
-            Ligar
-          </button>
         </div>
       </div>
       <div class="row">
@@ -134,7 +102,7 @@ export default {
     return {
       dispositivos: [],
       showAddNewDevice: false,
-      showDeviceLoading: true,
+      showHouseLoading: true,
       showNewDeviceLoading: false,
       checkDeviceStatus: true
     };

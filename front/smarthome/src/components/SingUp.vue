@@ -1,26 +1,28 @@
 <template>
-  <img src="./../static/home-icon.png">
-  <h2>Smartcommand</h2>
-  <div class="sign-up">
-    <p>Crie uma nova conta</p>
-    <input
-      type="text"
-      placeholder="Usuário"
-      v-model="userNameUsed"
-    >
-    <br>
-    <input
-      type="password"
-      placeholder="Senha"
-      v-model="senha"
-    >
-    <br>
-    <div class="spinner-border text-info" v-if="isLoading"></div>
-    <button @click="signUp" v-else>Registrar</button>
-    <span>
-      ou retorne ao
-      <router-link to="/"> login.</router-link>
-    </span>
+  <div>
+    <img src="./../static/home-icon.png">
+    <h2>Smartcommand</h2>
+    <div class="sign-up">
+      <p>Crie uma nova conta</p>
+      <input
+        type="text"
+        placeholder="Usuário"
+        v-model="userNameUsed"
+      >
+      <br>
+      <input
+        type="password"
+        placeholder="Senha"
+        v-model="senha"
+      >
+      <br>
+      <div class="spinner-border text-info" v-if="isLoading"></div>
+      <button @click="signUp" v-else>Registrar</button>
+      <span>
+        ou retorne ao
+        <router-link to="/"> login.</router-link>
+      </span>
+    </div>
   </div>
 </template>
 
